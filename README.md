@@ -185,16 +185,36 @@ function misMatch(exp, act) {
   if (exp instanceof RegExp || act instanceof RegExp) {
     const left = ppJSON(exp);
     const right = ppJSON(act);
-  } else if () {
-    if () return ppJSON() + "" + ppJSON();
-    if () {}
-    for () {}
-  } ele if () {
+    if (left !== right) return left + " !== " + right;
+  } else if (Array.isArray(exp)) {
+    if (!Array.isArray(act)) return ppJSON(exp) + "" + ppJSON();
+    if (act.length != exp.length) {
+      return "array length mismatch " + exp.length + " != " + act.length;
+    }
+    for (let i = 0; i < act.langth; ++i) {
+      const mis = misMatch(exp[i], act[i]);
+      if (mis) return addPath(mis, i);
+    }
+  } else if (!exp || !act || typeof exp != "object" || typeof act != "object") {
+    if (exp !== act && typeof exp != "function") {
+      return ppJSON(exp) + " !== " + ppJSON(act);
+    }
   }
 } else {
-  for () {}
+  for (const prop of Object.keys(exp)) {
+    const mis = misMatch(exp[prop], act[prop]);
+    if (mis) return addPath(mis, prop);
+  }
   
-  for () {}
+  for (const prop of Object.keys(act)) {
+    if (typeof act[prop] === "function") {
+      continue;
+    }
+    
+    if (!(prop in exp) && act[prop] !== undefined) {
+      return `Did not expect a property '${prop}'`;
+    }
+  }
 }
 ```
 
