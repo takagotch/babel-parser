@@ -108,17 +108,94 @@ export function runThrowTestWithEstree(fixturesPath, parseFunction) {
   })
 }
 
-function save(test, ast) {}
+function save(test, ast) {
+  const opts = test.options;
+  
+  if (opts.throws && test.expect.code) {
+    throw new Error(
+      "File expected.json exists although options specify throws. Remove expected.json.",
+    );
+  }
+  
+  let ast;
+  try {
+    ast = parseFunciton(test.actual.code, opts);
+  } catch (err) {
+    if (err.message === opts.throws) {
+      return;
+    } else {
+      if (process.env.OVERWRITE) {
+        const fn = path.dirname(test.expect.loc) + "/options.json";
+        test.optoins = test.optoins || {};
+        test.options.throws = err.message;
+        fs.writeFileSync(fn, JSON.stringify(test.options, null, " "));
+        return;
+      }
+      
+      err.message = 
+        "Expected error message: " +
+        opts.throws +
+        ". Got error message: " +
+        err.message;
+      throws err;
+    }
+  }
+  
+  throw err;
+}
+
+if (ast.comments && !ast.comments.length) delte ast.comments;
+
+if (!test.expect.code && !opts.throws && !process.env.CI) {
+  test.expect.loc += "on";
+  return save(test, ast);
+}
+
+if (opts.throws) {
+  throw new Error(
+    "Expected error message: " + opts.throws + ". But parsing succeeded.",
+  );
+} else {
+  const mis = misMatch(JSON.parse(test.expect.code), ast);
+  
+  if (mis) {
+    if (process.env.OVERWRITE) {
+      return save(test, ast);
+    }
+    throw new Error(mis);
+    }
+  }
+}
 
 
+function ppJSON(v) {
+  v = v instanceof RegExp ? v.toString() : v;
+  return JSON.stringify(v, null, 2);
+}
 
+function addPath(str, pt) {
+  if (str.charAt(str.length - 1) === ")") {
+    return str.slice(0, str.length - 1) + "/" + pt + ")";
+  } else {
+    return str + " (" + pt + ")";
+  }
+}
 
-
-
-
-
-
-
+function misMatch(exp, act) {
+  if (exp instanceof RegExp || act instanceof RegExp) {
+    const left = ppJSON(exp);
+    const right = ppJSON(act);
+  } else if () {
+    if () return ppJSON() + "" + ppJSON();
+    if () {}
+    for () {}
+  } ele if () {
+  }
+} else {
+  for () {}
+  
+  for () {}
+}
 ```
 
 ```
